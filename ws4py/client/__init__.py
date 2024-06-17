@@ -206,15 +206,15 @@ class WebSocketBaseClient(WebSocket):
         """
         if self.scheme == "wss":
             # default port is now 443; upgrade self.sender to send ssl
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            context = ssl.create_default_context()
             if self.ssl_options.get('certfile', None):
                 context.load_cert_chain(self.ssl_options.get('certfile'), self.ssl_options.get('keyfile'))
-            # Prevent check_hostname requires server_hostname (ref #187)
-            if "cert_reqs" not in self.ssl_options:
+            # You almost certainly do not want to do this:
+            if self.ssl_options.get("no_verify", False):
                 context.check_hostname = False
                 context.verify_mode = ssl.CERT_NONE
 
-            self.sock = context.wrap_socket(self.sock)
+            self.sock = context.wrap_socket(self.sock, server_hostname=self.host)
             self._is_secure = True
 
         self.sock.connect(self.bind_addr)
