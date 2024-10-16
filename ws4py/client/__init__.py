@@ -206,7 +206,8 @@ class WebSocketBaseClient(WebSocket):
         """
         if self.scheme == "wss":
             # default port is now 443; upgrade self.sender to send ssl
-            context = ssl.create_default_context()
+            protocol = getattr(ssl, 'PROTOCOL_TLS_CLIENT', ssl.PROTOCOL_TLSv1_2)  # PROTOCOL_TLS_CLIENT is correct for newer Python but doesn't exist on older Pythons
+            context = ssl.SSLContext(protocol)
             if self.ssl_options.get('certfile', None):
                 context.load_cert_chain(self.ssl_options.get('certfile'), self.ssl_options.get('keyfile'))
             # You almost certainly do not want to do this:
